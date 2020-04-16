@@ -35,17 +35,18 @@ public abstract class AbstractGraph<T> implements Graph<T> {
     @Override
     public void addVertex(@NotNull Vertex<T> vertex) {
         Objects.requireNonNull(vertex);
-        readWriteLock.readLock().lock();
 
-        if (vertexExists(vertex)) {
-            readWriteLock.readLock().unlock();
-            throw new IllegalArgumentException("Provided vertex already exists");
+        try {
+            readWriteLock.writeLock().lock();
+
+            if (vertexExists(vertex)) {
+                throw new IllegalArgumentException("Provided vertex already exists");
+            }
+
+            edges.put(vertex, new HashSet<>());
+        } finally {
+            readWriteLock.writeLock().unlock();
         }
-
-        readWriteLock.readLock().unlock();
-        readWriteLock.writeLock().lock();
-        edges.put(vertex, new HashSet<>());
-        readWriteLock.writeLock().unlock();
     }
 
     @Override
